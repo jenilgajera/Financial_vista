@@ -1,5 +1,5 @@
-import 'package:financial_vista/sign_create.dart';
 import 'package:flutter/material.dart';
+import 'package:financial_vista/splashscreen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,6 +12,6 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-        debugShowCheckedModeBanner: false, home: SignInScreen());
+        debugShowCheckedModeBanner: false, home: Splashscreen());
   }
 }
