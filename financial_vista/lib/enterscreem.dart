@@ -10,7 +10,7 @@ class Enterscreen extends StatefulWidget {
 class _EnterscreenState extends State<Enterscreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(child: Text("welcome agin"),),
     );
   }
