@@ -1,8 +1,11 @@
-import 'package:financial_vista/create_account.dart';
+import 'package:financial_vista/auth/create_account.dart';
+import 'package:financial_vista/dashboard.dart';
 import 'package:financial_vista/forget_password.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -21,7 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Image of wallet, card, and coins
-              SizedBox(
+              const SizedBox(
                 height: 100,
               ),
               Center(
@@ -33,7 +36,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 40),
 
               // Sign In Text
-              Text(
+              const Text(
                 'Sign in',
                 style: TextStyle(
                   fontSize: 32,
@@ -49,7 +52,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10), // Border radius
                   ),
-                  suffixIcon: Icon(Icons.check_circle, color: Colors.black),
+                  suffixIcon:
+                      const Icon(Icons.check_circle, color: Colors.black),
                 ),
               ),
               const SizedBox(height: 20),
@@ -100,17 +104,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity, // Full-width button
                   child: ElevatedButton(
                     onPressed: () {
-                      // Handle sign in
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => DashboardScreen()),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
-                          Color(0xFF7F50CC), // Purple background color
+                          const Color(0xFF7F50CC), // Purple background color
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'sign in',
                       style: TextStyle(
                         color: Colors.white,
@@ -134,7 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     );
                   },
                   child: RichText(
-                    text: TextSpan(
+                    text: const TextSpan(
                       text: 'Don’t have an account? ',
                       style: TextStyle(color: Colors.black),
                       children: <TextSpan>[

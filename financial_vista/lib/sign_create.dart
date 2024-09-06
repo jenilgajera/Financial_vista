@@ -1,4 +1,4 @@
-import 'package:financial_vista/create_account.dart';
+import 'package:financial_vista/auth/create_account.dart';
 import 'package:financial_vista/signing.dart';
 import 'package:flutter/material.dart';
 
@@ -36,7 +36,7 @@ class SignInScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Sign In button pressed')),
+                        const SnackBar(content: Text('Sign In button pressed')),
                       );
                       Navigator.push(
                         context,
@@ -46,7 +46,7 @@ class SignInScreen extends StatelessWidget {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(
+                      backgroundColor: const Color(
                           0xFF7F50CC,), // Correct color code with the 0xFF prefix
                       padding: const EdgeInsets.symmetric(vertical: 15),
                       shape: RoundedRectangleBorder(

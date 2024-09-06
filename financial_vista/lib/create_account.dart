@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class CreateAccountScreen extends StatefulWidget {
+  const CreateAccountScreen({super.key});
+
   @override
   _CreateAccountScreenState createState() => _CreateAccountScreenState();
 }
@@ -33,7 +35,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              Text(
+              const Text(
                 'Create account',
                 style: TextStyle(
                   fontSize: 28,
@@ -41,14 +43,14 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
+              const TextField(
                 decoration: InputDecoration(
                   labelText: 'Username',
                   border: OutlineInputBorder(),
                 ),
               ),
               const SizedBox(height: 20),
-              TextField(
+              const TextField(
                 decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
@@ -59,7 +61,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 obscureText: !_isPasswordVisible,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  border: OutlineInputBorder(),
+                  border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: Icon(
                       _isPasswordVisible
@@ -85,7 +87,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                       });
                     },
                   ),
-                  Text('I accept the terms and privacy policy'),
+                  const Text('I accept the terms and privacy policy'),
                 ],
               ),
               const SizedBox(height: 20),
@@ -99,13 +101,13 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 50, vertical: 15),
-                      backgroundColor: Color(0xFF77f50cc), // Purple background
+                      backgroundColor: const Color(0xff77f50cc), // Purple background
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text(
+                    child: const Text(
                       'Create account',
                       style: TextStyle(
                         color: Colors.white, // Set font color to white
@@ -122,7 +124,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     // Navigate back to SignInScreen
                     Navigator.pop(context);
                   },
-                  child: Text(
+                  child: const Text(
                     'Already have an account? Sign in',
                     style: TextStyle(
                       color: Colors.black,

@@ -1,79 +1,122 @@
+import 'package:financial_vista/emailverification.dart';
+import 'package:financial_vista/signing.dart';
 import 'package:flutter/material.dart';
 
-class PasswordResetScreen extends StatefulWidget {
-  const PasswordResetScreen({super.key});
-
-  @override
-  State<PasswordResetScreen> createState() => _PasswordResetScreenState();
-}
-
-class _PasswordResetScreenState extends State<PasswordResetScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _newPasswordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
+class ForgotPasswordScreen extends StatelessWidget {
+  const ForgotPasswordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Reset Password'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );
+          },
+        ),
+        elevation: 0,
+        // backgroundColor: Colors.white,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Please type something you\'ll remember',
-                style: TextStyle(fontSize: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            const SizedBox(
+              height: 50,
+            ),
+            const Text(
+              'Forgot password?',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              TextFormField(
-                controller: _newPasswordController,
-                decoration: const InputDecoration(
-                  labelText: 'New password',
-                  hintText: 'Must be 8 characters',
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Don't worry! It happens. Please enter the email associated with your account.",
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 30),
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Email address',
+                hintText: 'Enter your email address',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter a new password';
-                  } else if (value.length < 8) {
-                    return 'Password must be at least 8 characters long';
-                  }
-                  return null;
-                },
               ),
-              TextFormField(
-                controller: _confirmPasswordController,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm new password',
-                  hintText: 'Repeat password',
-                ),
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please confirm your new password';
-                  } else if (value != _newPasswordController.text) {
-                    return 'Passwords do not match';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
                 onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // Handle password reset here
-                    print('New password: ${_newPasswordController.text}');
-                    // Implement your password reset logic
-                  }
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EmailVerificationScreen()),
+                  );
                 },
-                child: const Text('Reset password'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: const Color(0xff77f50cc),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
+                child: const Text(
+                  'Send code',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              const SizedBox(height: 16),
-              const Text('Already have an account? Log in')
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  // Handle log in
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text(
+                      'Remember password?',
+                      style: TextStyle(
+                        color: Colors.black54,
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => LoginScreen()),
+                        );
+                      },
+                      child: const Text(
+                        ' Log in',
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -3,12 +3,14 @@ import 'package:financial_vista/signing.dart';
 import 'package:flutter/material.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
+  const ForgotPasswordScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.push(
               context,
@@ -24,25 +26,25 @@ class ForgotPasswordScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 50,
             ),
-            Text(
+            const Text(
               'Forgot password?',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 10),
-            Text(
+            const SizedBox(height: 10),
+            const Text(
               "Don't worry! It happens. Please enter the email associated with your account.",
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.black54,
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             TextField(
               decoration: InputDecoration(
                 labelText: 'Email address',
@@ -52,7 +54,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -64,13 +66,13 @@ class ForgotPasswordScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Color(0xFF77f50cc),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: const Color(0xff77f50cc),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Send code',
                   style: TextStyle(
                     fontSize: 16,
@@ -79,7 +81,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Center(
               child: TextButton(
                 onPressed: () {
@@ -88,7 +90,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'Remember password?',
                       style: TextStyle(
                         color: Colors.black54,
@@ -102,7 +104,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                               builder: (context) => LoginScreen()),
                         );
                       },
-                      child: Text(
+                      child: const Text(
                         ' Log in',
                         style: TextStyle(
                           color: Colors.black,

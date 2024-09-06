@@ -1,15 +1,17 @@
 import 'package:financial_vista/forget_password.dart';
-import 'package:financial_vista/passowrd_change.dart';
+import 'package:financial_vista/passowrd_reset.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class EmailVerificationScreen extends StatelessWidget {
+  const EmailVerificationScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.push(
               context,
@@ -25,19 +27,19 @@ class EmailVerificationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            SizedBox(
+            const SizedBox(
               height: 40,
             ),
-            Text(
+            const Text(
               'Please check your email',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             RichText(
-              text: TextSpan(
+              text: const TextSpan(
                 text: "We've sent a code to ",
                 style: TextStyle(color: Colors.black54, fontSize: 16),
                 children: [
@@ -51,7 +53,7 @@ class EmailVerificationScreen extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -61,7 +63,7 @@ class EmailVerificationScreen extends StatelessWidget {
                 _buildCodeInputField(context),
               ],
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -73,13 +75,13 @@ class EmailVerificationScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Color(0xFF77f50cc),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: const Color(0xff77f50cc),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Verify',
                   style: TextStyle(
                     fontSize: 16,
@@ -88,8 +90,8 @@ class EmailVerificationScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 25),
-            Row(
+            const SizedBox(height: 25),
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
@@ -133,10 +135,10 @@ class EmailVerificationScreen extends StatelessWidget {
           inputFormatters: [
             LengthLimitingTextInputFormatter(1),
           ],
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             border: InputBorder.none,
           ),
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
     );
