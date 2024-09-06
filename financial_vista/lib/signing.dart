@@ -1,4 +1,4 @@
-import 'package:financial_vista/auth/create_account.dart';
+import 'package:financial_vista/create_account.dart';
 import 'package:financial_vista/dashboard.dart';
 import 'package:financial_vista/forget_password.dart';
 import 'package:flutter/material.dart';
