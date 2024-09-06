@@ -1,7 +1,36 @@
 import 'package:flutter/material.dart';
 
-class EditProfileScreen extends StatelessWidget {
+class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
+
+  @override
+  _EditProfileScreenState createState() => _EditProfileScreenState();
+}
+
+class _EditProfileScreenState extends State<EditProfileScreen> {
+  DateTime? _selectedDate;
+  final TextEditingController _dobController = TextEditingController();
+
+  @override
+  void dispose() {
+    _dobController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+        _dobController.text = "${picked.day}/${picked.month}/${picked.year}";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +64,8 @@ class EditProfileScreen extends StatelessWidget {
                 children: [
                   const CircleAvatar(
                     radius: 60,
-                    backgroundColor: Colors.yellow,
-                    child: Text(
-                      "🦁",
-                      style: TextStyle(fontSize: 60),
-                    ),
+                    backgroundImage:
+                        AssetImage('assets/image/profileimage.png'),
                   ),
                   Positioned(
                     bottom: 0,
@@ -62,7 +88,7 @@ class EditProfileScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Name',
-                  hintText: 'Krupansu Sorathiya',
+                  hintText: 'enter your name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -74,7 +100,7 @@ class EditProfileScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  hintText: 'krupansusorathiya@gmail.com',
+                  hintText: 'abc@gmail.com',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -86,7 +112,7 @@ class EditProfileScreen extends StatelessWidget {
               TextField(
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  hintText: '+91 1234567890',
+                  hintText: 'enter your phone number',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -94,16 +120,26 @@ class EditProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Date of Birth Input
+              // Date of Birth Input with Date Picker
               TextField(
+                controller: _dobController,
                 decoration: InputDecoration(
                   labelText: 'Date of Birth',
-                  hintText: '23/05/1995',
-                  suffixIcon: const Icon(Icons.calendar_today),
+                  hintText: 'DD/MM/YYYY',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: () {
+                      _selectDate(context);
+                    },
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                readOnly: true,
+                onTap: () {
+                  _selectDate(context);
+                },
               ),
               const SizedBox(height: 16),
 
@@ -137,7 +173,7 @@ class EditProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: Text('Save changes'),
+                  child: const Text('Save changes'),
                 ),
               ),
             ],

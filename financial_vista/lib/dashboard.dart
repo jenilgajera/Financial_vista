@@ -1,3 +1,6 @@
+import 'package:financial_vista/AddExpenseScreen.dart';
+import 'package:financial_vista/edit_profile.dart';
+import 'package:financial_vista/notification.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -11,13 +14,22 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Row(
+        title: Row(
           children: [
-            CircleAvatar(
-              backgroundImage: AssetImage('assets/image/profileimage.png'),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const EditProfileScreen()),
+                );
+              },
+              child: const CircleAvatar(
+                backgroundImage: AssetImage('assets/image/profileimage.png'),
+              ),
             ),
-            SizedBox(width: 8),
-            Column(
+            const SizedBox(width: 8),
+            const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -34,8 +46,17 @@ class DashboardScreen extends StatelessWidget {
                 ),
               ],
             ),
-            Spacer(),
-            Icon(Icons.notifications, color: Colors.black),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.notifications, color: Colors.black),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const NotificationScreen()),
+                );
+              },
+            ),
           ],
         ),
         automaticallyImplyLeading: false,
@@ -56,7 +77,8 @@ class DashboardScreen extends StatelessWidget {
                   color: const Color(0xFFE1BEE7),
                   borderRadius: BorderRadius.circular(15),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
               ),
             ),
 
@@ -70,7 +92,8 @@ class DashboardScreen extends StatelessWidget {
                   color: const Color(0xFFB388FF),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -119,7 +142,7 @@ class DashboardScreen extends StatelessWidget {
                         // Income Section
                         Row(
                           children: [
-                            Icon(Icons.arrow_upward, color: Colors.blue),
+                            Icon(Icons.arrow_upward, color: Colors.green),
                             SizedBox(width: 5),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -154,7 +177,8 @@ class DashboardScreen extends StatelessWidget {
                   color: const Color.fromARGB(255, 192, 80, 115),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
                 child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -185,7 +209,8 @@ class DashboardScreen extends StatelessWidget {
               right: 0,
               child: Container(
                 height: 290, // Set a fixed height for the chart
-                padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
                 child: BarChart(
                   BarChartData(
                     barGroups: [
@@ -326,7 +351,12 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => AddExpenseScreen()),
+          );
+        },
         backgroundColor: const Color(0xFF6F35A5),
         elevation: 5.0,
         child: Icon(Icons.add),
