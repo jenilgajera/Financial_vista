@@ -42,7 +42,7 @@ class _HomescreenState extends State<Homescreen> {
                 child: SwipeableButtonView(
                   buttonText: "SWIPE TO START",
                   buttonWidget: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
