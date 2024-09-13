@@ -1,6 +1,9 @@
 import 'package:financial_vista/AddExpenseScreen.dart';
+import 'package:financial_vista/budget_screen.dart';
 import 'package:financial_vista/edit_profile.dart';
+import 'package:financial_vista/more_screen.dart';
 import 'package:financial_vista/notification.dart';
+import 'package:financial_vista/transaction.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -311,57 +314,65 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
       ),
-
-      bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFFE8DAFF),
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        child: SizedBox(
-          height: 60.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.home),
-                iconSize: 40,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.credit_card),
-                iconSize: 35,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 20), // Space for the FloatingActionButton
-              IconButton(
-                icon: const Icon(Icons.account_balance_wallet),
-                iconSize: 33,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.more_horiz),
-                iconSize: 35,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.purple,
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddExpenseScreen()),
+            MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
           );
         },
-        backgroundColor: const Color(0xFF6F35A5),
-        elevation: 5.0,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const DashboardScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.credit_card),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const TransactionScreen()),
+                );
+              },
+            ),
+            const SizedBox(width: 40), // space for the FAB
+            IconButton(
+              icon: const Icon(Icons.wallet),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => BudgetScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_horiz),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>   MoreScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
