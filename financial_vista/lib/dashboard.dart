@@ -316,6 +316,7 @@ class DashboardScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
+        foregroundColor: Colors.white, // Set the icon color to white
         onPressed: () {
           Navigator.push(
             context,
@@ -324,6 +325,7 @@ class DashboardScreen extends StatelessWidget {
         },
         child: const Icon(Icons.add),
       ),
+
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -366,7 +368,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>   const MoreScreen()),
+                  MaterialPageRoute(builder: (context) => const MoreScreen()),
                 );
               },
             ),
