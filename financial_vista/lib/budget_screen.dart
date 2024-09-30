@@ -98,6 +98,7 @@ class BudgetScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
             context,
@@ -118,7 +119,8 @@ class BudgetScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const DashboardScreen()),
                 );
               },
             ),
@@ -127,7 +129,8 @@ class BudgetScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const TransactionScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const TransactionScreen()),
                 );
               },
             ),
@@ -163,7 +166,8 @@ class BudgetTile extends StatelessWidget {
   final String totalAmount;
   final VoidCallback onTap; // Added onTap parameter
 
-  const BudgetTile({super.key, 
+  const BudgetTile({
+    super.key,
     required this.title,
     required this.amountLeft,
     required this.totalAmount,

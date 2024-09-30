@@ -117,6 +117,7 @@ class TransactionScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
+        foregroundColor: Colors.white,
         onPressed: () {
           Navigator.push(
             context,
