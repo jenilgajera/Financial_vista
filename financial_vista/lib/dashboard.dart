@@ -357,7 +357,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => BudgetScreen()),
+                  MaterialPageRoute(builder: (context) => const BudgetScreen()),
                 );
               },
             ),
@@ -366,7 +366,7 @@ class DashboardScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>   MoreScreen()),
+                  MaterialPageRoute(builder: (context) =>   const MoreScreen()),
                 );
               },
             ),

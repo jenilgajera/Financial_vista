@@ -1,30 +1,40 @@
 import 'package:financial_vista/AddExpenseScreen.dart';
+import 'package:financial_vista/bill_screen.dart';
+import 'package:financial_vista/budget_screen.dart';
 import 'package:financial_vista/dashboard.dart';
 import 'package:financial_vista/transaction.dart';
 import 'package:flutter/material.dart';
 
 class MoreScreen extends StatelessWidget {
+  const MoreScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('More'),
+        title: const Text('More'),
         actions: [
           IconButton(
-            icon: Icon(Icons.help_outline),
+            icon: const Icon(Icons.help_outline),
             onPressed: () {},
           ),
         ],
         backgroundColor: Colors.purple[100],
       ),
       body: ListView(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         children: [
           CustomListTile(
             icon: Icons.receipt_long,
             text: 'Save Your Bills',
-            onTap: () {},
+            onTap: () {
+              Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SaveBillScreen()),
+          );
+            },
           ),
+
           CustomListTile(
             icon: Icons.feedback,
             text: 'Feedback',
@@ -88,7 +98,10 @@ class MoreScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.wallet),
               onPressed: () {
-                // Navigate to wallet section
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BudgetScreen()),
+                );
               },
             ),
             IconButton(
@@ -109,7 +122,7 @@ class CustomListTile extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
 
-  CustomListTile({required this.icon, required this.text, required this.onTap});
+  const CustomListTile({super.key, required this.icon, required this.text, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +131,7 @@ class CustomListTile extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: Colors.black),
         title: Text(text),
-        trailing: Icon(Icons.arrow_forward_ios),
+        trailing: const Icon(Icons.arrow_forward_ios),
         onTap: onTap,
       ),
     );

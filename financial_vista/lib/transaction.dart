@@ -1,4 +1,5 @@
 import 'package:financial_vista/AddExpenseScreen.dart';
+import 'package:financial_vista/budget_screen.dart';
 import 'package:financial_vista/dashboard.dart';
 import 'package:financial_vista/more_screen.dart';
 import 'package:flutter/material.dart';
@@ -68,21 +69,21 @@ class TransactionScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              TransactionTile(
+              const TransactionTile(
                 category: 'Food',
                 description: 'Take coffee',
                 amount: '-₹50',
                 color: Colors.redAccent,
                 icon: Icons.fastfood,
               ),
-              TransactionTile(
+              const TransactionTile(
                 category: 'Shopping',
                 description: 'Buy some grocery items',
                 amount: '-₹1000',
                 color: Colors.orangeAccent,
                 icon: Icons.shopping_bag,
               ),
-              TransactionTile(
+              const TransactionTile(
                 category: 'Gift',
                 description: 'Buy gifts for my friends',
                 amount: '-₹500',
@@ -96,14 +97,14 @@ class TransactionScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 10),
-              TransactionTile(
+              const TransactionTile(
                 category: 'Salary',
                 description: 'Get salary of this month',
                 amount: '+₹10,000',
                 color: Colors.lightBlueAccent,
                 icon: Icons.account_balance_wallet,
               ),
-              TransactionTile(
+              const TransactionTile(
                 category: 'Food',
                 description: 'Buy some grocery items',
                 amount: '-₹1000',
@@ -155,7 +156,10 @@ class TransactionScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.wallet),
               onPressed: () {
-                // Navigate to wallet section
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BudgetScreen()),
+                );
               },
             ),
             IconButton(
@@ -163,7 +167,7 @@ class TransactionScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MoreScreen()),
+                  MaterialPageRoute(builder: (context) => const MoreScreen()),
                 );
               },
             ),
