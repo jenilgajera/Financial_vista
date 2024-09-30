@@ -35,8 +35,8 @@ class NotificationScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
-          children: [
-            const NotificationSection(
+          children: const [
+            NotificationSection(
               sectionTitle: 'Today',
               notifications: [
                 NotificationItem(
@@ -55,7 +55,7 @@ class NotificationScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const NotificationSection(
+            NotificationSection(
               sectionTitle: 'Yesterday',
               notifications: [
                 NotificationItem(
@@ -74,7 +74,7 @@ class NotificationScreen extends StatelessWidget {
                 ),
               ],
             ),
-            const NotificationSection(
+            NotificationSection(
               sectionTitle: 'This Weekend',
               notifications: [
                 NotificationItem(
@@ -104,7 +104,7 @@ class NotificationSection extends StatelessWidget {
   final String sectionTitle;
   final List<NotificationItem> notifications;
 
-  const NotificationSection({
+  const NotificationSection({super.key, 
     required this.sectionTitle,
     required this.notifications,
   });
@@ -138,7 +138,7 @@ class NotificationItem extends StatelessWidget {
   final String time;
   final String? details;
 
-  const NotificationItem({
+  const NotificationItem({super.key, 
     required this.icon,
     required this.title,
     required this.subtitle,

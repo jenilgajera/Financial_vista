@@ -1,7 +1,12 @@
-import 'package:financial_vista/dashboard.dart';
+import 'package:financial_vista/budget_screen.dart';
+import 'package:financial_vista/more_screen.dart';
+import 'package:financial_vista/transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:financial_vista/dashboard.dart';
 
 class AddExpenseScreen extends StatefulWidget {
+  const AddExpenseScreen({super.key});
+
   @override
   _AddExpenseScreenState createState() => _AddExpenseScreenState();
 }
@@ -13,6 +18,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _categoryController = TextEditingController();
   final _titleController = TextEditingController();
   final _notesController = TextEditingController();
+  final List<String> _categories = [
+    'Salary',
+    'Groceries',
+    'Gas',
+    'Rent',
+    'Gym',
+    'Restaurant',
+    'Travel',
+    'Vacation',
+    'Gift',
+    'Savings',
+    'Investments',
+    'Entertainment'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +50,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Expense/Income Toggle
               Row(
                 children: [
                   Expanded(
@@ -43,7 +61,6 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 ],
               ),
               const SizedBox(height: 20),
-              // Show relevant form based on the selected type
               _selectedType == 'Expense'
                   ? _buildExpenseForm()
                   : _buildIncomeForm(),
@@ -51,62 +68,65 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomAppBar(
-        color: const Color(0xFFE8DAFF),
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        child: SizedBox(
-          height: 60.0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: <Widget>[
-              IconButton(
-                icon: const Icon(Icons.home),
-                iconSize: 40,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const DashboardScreen()),
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.credit_card),
-                iconSize: 35,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-              const SizedBox(width: 20), // Space for the FloatingActionButton
-              IconButton(
-                icon: const Icon(Icons.account_balance_wallet),
-                iconSize: 33,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-              IconButton(
-                icon: const Icon(Icons.more_horiz),
-                iconSize: 35,
-                color: const Color(0xFF6F35A5),
-                onPressed: () {},
-              ),
-            ],
-          ),
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.purple,
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => AddExpenseScreen()),
+            MaterialPageRoute(builder: (context) => const AddExpenseScreen()),
           );
         },
-        backgroundColor: const Color(0xFF6F35A5),
-        elevation: 5.0,
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8.0,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.home_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const DashboardScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.credit_card),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const TransactionScreen()),
+                );
+              },
+            ),
+            const SizedBox(width: 40), // space for the FAB
+            IconButton(
+              icon: const Icon(Icons.wallet),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const BudgetScreen()),
+                );
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_horiz),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MoreScreen()),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -183,10 +203,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   Widget _buildTextField(TextEditingController controller, String labelText,
-      {int maxLines = 1}) {
+      {int maxLines = 1, bool readOnly = false, Function()? onTap}) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      readOnly: readOnly,
+      onTap: onTap,
       decoration: InputDecoration(
         labelText: labelText,
         labelStyle: TextStyle(color: Colors.grey[400], fontSize: 16),
@@ -200,6 +222,38 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
   }
 
+  // New function to build category selection
+  void _selectCategory() async {
+    final selectedCategory = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Category'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _categories.length,
+              itemBuilder: (BuildContext context, int index) {
+                return ListTile(
+                  leading: const Icon(Icons.category),
+                  title: Text(_categories[index]),
+                  onTap: () {
+                    Navigator.pop(context, _categories[index]);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+
+    if (selectedCategory != null) {
+      _categoryController.text = selectedCategory;
+    }
+  }
+
   Widget _buildExpenseForm() {
     return Column(
       children: [
@@ -207,7 +261,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         const SizedBox(height: 20),
         _buildTextField(_amountController, 'Enter Amount'),
         const SizedBox(height: 20),
-        _buildTextField(_categoryController, 'Select category'),
+        _buildTextField(
+          _categoryController,
+          'Select category',
+          readOnly: true,
+          onTap: _selectCategory,
+        ),
         const SizedBox(height: 20),
         _buildTextField(_titleController, 'Title'),
         const SizedBox(height: 20),
@@ -219,15 +278,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             onPressed: () {
               // Handle add expense action
             },
-            child: const Text(
-              'Add Expense',
-              style: TextStyle(color: Colors.white),
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+            ),
+            child: const Text(
+              'Add Expense',
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ),
@@ -242,7 +301,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         const SizedBox(height: 20),
         _buildTextField(_amountController, 'Enter Amount'),
         const SizedBox(height: 20),
-        _buildTextField(_categoryController, 'Select category'),
+        _buildTextField(
+          _categoryController,
+          'Select category',
+          readOnly: true,
+          onTap: _selectCategory,
+        ),
         const SizedBox(height: 20),
         _buildTextField(_titleController, 'Title'),
         const SizedBox(height: 20),
@@ -254,15 +318,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             onPressed: () {
               // Handle add income action
             },
-            child: const Text(
-              'Add Income',
-              style: TextStyle(color: Colors.white),
-            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.deepPurple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+            ),
+            child: const Text(
+              'Add Income',
+              style: TextStyle(color: Colors.white),
             ),
           ),
         ),

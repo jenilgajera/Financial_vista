@@ -15,7 +15,7 @@ class EmailVerificationScreen extends StatelessWidget {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
+              MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
             );
           },
         ),
@@ -71,7 +71,7 @@ class EmailVerificationScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => PasswordResetScreen()),
+                        builder: (context) => const PasswordResetScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(

@@ -100,7 +100,7 @@ class _PasswordResetScreenState extends State<PasswordResetScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => PasswordChangedScreen()),
+                        builder: (context) => const PasswordChangedScreen()),
                   );
                 },
                 style: ElevatedButton.styleFrom(

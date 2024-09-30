@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => ForgotPasswordScreen()),
+                        builder: (context) => const ForgotPasswordScreen()),
                   );
                 },
                 child: Text(
@@ -107,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => DashboardScreen()),
+                            builder: (context) => const DashboardScreen()),
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CreateAccountScreen(),
+                        builder: (context) => const CreateAccountScreen(),
                       ),
                     );
                   },
