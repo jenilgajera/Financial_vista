@@ -30,7 +30,7 @@ class ConsultGuruPage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: AssetImage('assets/nenis.png'), 
+                    backgroundImage: AssetImage('assets/nenis.png'),
                   ),
                   SizedBox(height: 10),
                   Text(

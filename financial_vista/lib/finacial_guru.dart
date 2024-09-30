@@ -130,7 +130,8 @@ class FinancialGurusScreen extends StatelessWidget {
             ElevatedButton(
               onPressed: () {},
               style: ElevatedButton.styleFrom(
-                foregroundColor: const Color(0xFF6A1B9A), backgroundColor: Colors.white, // button text color
+                foregroundColor: const Color(0xFF6A1B9A),
+                backgroundColor: Colors.white, // button text color
               ),
               child: const Text('Contact Now'),
             ),
