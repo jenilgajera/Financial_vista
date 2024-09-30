@@ -139,7 +139,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: _selectedType == text ? Colors.deepPurple : Colors.grey[200],
+          color: _selectedType == text ? Colors.purple : Colors.grey[200],
           borderRadius: BorderRadius.circular(10),
         ),
         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -279,7 +279,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               // Handle add expense action
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: Colors.purple[100],
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
