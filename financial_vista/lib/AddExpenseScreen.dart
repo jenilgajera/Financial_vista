@@ -279,7 +279,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               // Handle add expense action
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple[100],
+              backgroundColor: Colors.purple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -319,7 +319,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               // Handle add income action
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
+              backgroundColor: Colors.purple,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
