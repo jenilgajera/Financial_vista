@@ -1,5 +1,6 @@
 import 'package:financial_vista/about.dart';
 import 'package:financial_vista/finacial_guru.dart';
+import 'package:financial_vista/tips.dart';
 import 'package:flutter/material.dart';
 import 'package:financial_vista/AddExpenseScreen.dart';
 import 'package:financial_vista/bill_screen.dart';
@@ -64,7 +65,7 @@ class MoreScreen extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const FinancialGurusScreen()),
+                    builder: (context) => const FinancialGuruScreen()),
               ); // Close SnackBar if open
             },
           ),
@@ -73,6 +74,11 @@ class MoreScreen extends StatelessWidget {
             text: 'Financial Tips',
             onTap: () {
               _closeSnackBar(context); // Close SnackBar if open
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const FinancialTipsScreen()),
+              );
             },
           ),
         ],

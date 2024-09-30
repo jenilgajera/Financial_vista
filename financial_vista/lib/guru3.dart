@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class Guru1 extends StatelessWidget {
-  const Guru1({Key? key}) : super(key: key);
+class Guru3 extends StatelessWidget {
+  const Guru3({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +23,9 @@ class Guru1 extends StatelessWidget {
               // First Guru Container
               buildGuruContainer(
                 context: context,
-                imageUrl: 'assets/image/nenis.png', // Local image
-                name: 'Nenis Rudani',
-                title: 'Personal Finance & Investment Advisor',
+                imageUrl: 'assets/image/jenil.png', // Local image
+                name: 'Jenil Gajera',
+                title: 'Financial Coach',
               ),
               const SizedBox(height: 16),
 
