@@ -53,7 +53,7 @@ class MoreScreen extends StatelessWidget {
               _closeSnackBar(context); // Close SnackBar if open
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => AboutPage()),
+                MaterialPageRoute(builder: (context) => const AboutPage()),
               ); // Close SnackBar if open
             },
           ),
@@ -109,7 +109,7 @@ class MoreScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const DashboardScreen()),
+                      builder: (context) => const DashboardScreen(),),
                 );
               },
             ),
@@ -149,7 +149,7 @@ class MoreScreen extends StatelessWidget {
 
   // Function to show SnackBar for feedback
   void _showFeedbackSnackBar(BuildContext context) {
-    int _rating = 0; // Variable to track the user's rating
+    int rating = 0; // Variable to track the user's rating
     final TextEditingController feedbackController = TextEditingController();
 
     final snackBar = SnackBar(
@@ -162,11 +162,11 @@ class MoreScreen extends StatelessWidget {
               color: Colors.purple[100],
               borderRadius: BorderRadius.circular(10),
             ),
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
+                const Text(
                   'Rate Financial Vista',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -175,19 +175,19 @@ class MoreScreen extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text(
                   'Share your feedback with the developer to improve your financial vista',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(5, (index) {
                     return IconButton(
                       icon: Icon(
-                        index < _rating
+                        index < rating
                             ? Icons.star
                             : Icons.star_border, // Filled or outline star
                         color: Colors.black,
@@ -195,13 +195,13 @@ class MoreScreen extends StatelessWidget {
                       ),
                       onPressed: () {
                         setState(() {
-                          _rating = index + 1; // Set the selected rating
+                          rating = index + 1; // Set the selected rating
                         });
                       },
                     );
                   }),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 TextField(
                   controller: feedbackController,
                   decoration: InputDecoration(
@@ -214,7 +214,7 @@ class MoreScreen extends StatelessWidget {
                   ),
                   maxLines: 3,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.purple, // Background color
@@ -227,11 +227,11 @@ class MoreScreen extends StatelessWidget {
                     _closeSnackBar(context);
                     // Logic to submit the feedback and rating
                     String feedback = feedbackController.text;
-                    print("User's Rating: $_rating");
+                    print("User's Rating: $rating");
                     print("User's Feedback: $feedback");
                     // TODO: Send the rating and feedback to your backend or display confirmation
                   },
-                  child: Text(
+                  child: const Text(
                     'Submit',
                     style: TextStyle(color: Colors.white),
                   ),
@@ -241,9 +241,9 @@ class MoreScreen extends StatelessWidget {
           );
         },
       ),
-      duration: Duration(seconds: 50),
+      duration: const Duration(seconds: 50),
       behavior: SnackBarBehavior.floating,
-      margin: EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);

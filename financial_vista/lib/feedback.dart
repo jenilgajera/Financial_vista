@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class FeedbackPage  extends StatelessWidget {
+  const FeedbackPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -8,8 +10,8 @@ class FeedbackPage  extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
+        leading: const Padding(
+          padding: EdgeInsets.all(8.0),
           child: Text(
             'More',
             style: TextStyle(color: Colors.black, fontSize: 24),
@@ -17,7 +19,7 @@ class FeedbackPage  extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.help_outline, color: Colors.black),
+            icon: const Icon(Icons.help_outline, color: Colors.black),
             onPressed: () {
               // Help icon action
             },
@@ -29,7 +31,7 @@ class FeedbackPage  extends StatelessWidget {
           Expanded(
             child: ListView(
               padding: const EdgeInsets.all(16),
-              children: [
+              children: const [
                 MenuOption(
                   icon: Icons.receipt_long,
                   title: 'Save Your Bills',
@@ -53,7 +55,7 @@ class FeedbackPage  extends StatelessWidget {
               ],
             ),
           ),
-          RatingSection(),
+          const RatingSection(),
         ],
       ),
     );
@@ -64,7 +66,7 @@ class MenuOption extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const MenuOption({required this.icon, required this.title});
+  const MenuOption({super.key, required this.icon, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +76,9 @@ class MenuOption extends StatelessWidget {
         leading: Icon(icon, color: Colors.black),
         title: Text(
           title,
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
-        trailing: Icon(Icons.arrow_forward_ios, color: Colors.black),
+        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.black),
         onTap: () {
           // Navigate to the respective screen
         },
@@ -86,6 +88,8 @@ class MenuOption extends StatelessWidget {
 }
 
 class RatingSection extends StatelessWidget {
+  const RatingSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -94,7 +98,7 @@ class RatingSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
+          const Text(
             'Rate Financial Vista',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -102,13 +106,13 @@ class RatingSection extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             'Share your feedback with the developer to improve your financial vista',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.grey[700]),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
@@ -116,7 +120,7 @@ class RatingSection extends StatelessWidget {
                 onPressed: () {
                   // Handle rating logic here
                 },
-                icon: Icon(
+                icon: const Icon(
                   Icons.star_border,
                   color: Colors.black,
                   size: 32,
@@ -124,7 +128,7 @@ class RatingSection extends StatelessWidget {
               );
             }),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           TextField(
             decoration: InputDecoration(
               hintText: 'Write your valuable suggestion here...',
@@ -136,7 +140,7 @@ class RatingSection extends StatelessWidget {
             ),
             maxLines: 3,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple, // Background color
@@ -147,7 +151,7 @@ class RatingSection extends StatelessWidget {
             onPressed: () {
               // Submit feedback
             },
-            child: Text('Submit'),
+            child: const Text('Submit'),
           ),
         ],
       ),

@@ -4,7 +4,7 @@ import 'package:financial_vista/guru3.dart';
 import 'package:flutter/material.dart';
 
 class FinancialGuruScreen extends StatelessWidget {
-  const FinancialGuruScreen({Key? key}) : super(key: key);
+  const FinancialGuruScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +89,7 @@ class FinancialGuruScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFFF6EEFF), // Light purple background color
+        color: const Color(0xFFF6EEFF), // Light purple background color
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -99,18 +99,18 @@ class FinancialGuruScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const Icon(
+          Icon(
             Icons.format_quote,
             color: Colors.black,
             size: 40,
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           Expanded(
             child: Text(
               'Welcome to the Financial Guru service, your personal guide to financial success. Our team of expert financial advisors is here to help you make informed decisions, plan for the future, and achieve your financial goals with confidence.',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 color: Colors.black87,
               ),
@@ -165,9 +165,9 @@ class FinancialGuruScreen extends StatelessWidget {
           // Text area with background color or gradient
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFFF6EEFF), // Light purple background
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(16.0),
                 bottomRight: Radius.circular(16.0),
               ),
@@ -209,7 +209,7 @@ class FinancialGuruScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // Button
-                Container(
+                SizedBox(
                   width: double
                       .infinity, // Makes the button take full width of the parent container
                   child: ElevatedButton(

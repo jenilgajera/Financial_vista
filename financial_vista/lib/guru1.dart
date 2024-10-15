@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class Guru1 extends StatelessWidget {
-  const Guru1({Key? key}) : super(key: key);
+  const Guru1({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -78,9 +78,9 @@ class Guru1 extends StatelessWidget {
           // Text area with background color or gradient
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Color(0xFFF6EEFF), // Light purple background
-              borderRadius: const BorderRadius.only(
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(16.0),
                 bottomRight: Radius.circular(16.0),
               ),
@@ -142,7 +142,7 @@ class Guru1 extends StatelessWidget {
           const SizedBox(height: 16),
 
           // Notes TextField
-          TextField(
+          const TextField(
             maxLines: 3,
             decoration: InputDecoration(
               labelText: 'Notes',
@@ -153,7 +153,7 @@ class Guru1 extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Email Input
-          TextField(
+          const TextField(
             decoration: InputDecoration(
               labelText: 'Email address',
               border: OutlineInputBorder(),
@@ -163,7 +163,7 @@ class Guru1 extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Phone Input
-          TextField(
+          const TextField(
             keyboardType: TextInputType.phone,
             decoration: InputDecoration(
               labelText: 'Phone number',

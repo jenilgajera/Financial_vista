@@ -1,5 +1,7 @@
 import 'package:financial_vista/dashboard.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore import
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -11,11 +13,84 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   DateTime? _selectedDate;
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _countryController = TextEditingController();
+
+  String? uId;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
 
   @override
   void dispose() {
     _dobController.dispose();
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _countryController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    uId = prefs.getString('u_id');
+
+    if (uId != null) {
+      var snapshot =
+          await FirebaseFirestore.instance.collection('users').doc(uId).get();
+
+      if (snapshot.exists) {
+        var userData = snapshot.data();
+        setState(() {
+          _nameController.text = userData?['username'] ?? '';
+          _emailController.text = userData?['email'] ?? '';
+          _phoneController.text = userData?['phone'] ?? '';
+          _dobController.text = userData?['dob'] ?? '';
+          _countryController.text = userData?['country'] ?? '';
+        });
+      }
+    }
+  }
+
+  Future<void> _saveChanges() async {
+    if (uId != null) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(uId).update({
+          'username': _nameController.text,
+          'phone': _phoneController.text,
+          'dob': _dobController.text,
+          'country': _countryController.text,
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Profile updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        Future.delayed(const Duration(seconds: 2), () {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DashboardScreen(),
+            ),
+          );
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating profile: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -72,24 +147,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     bottom: 0,
                     right: 0,
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.camera_alt,
-                        color: Colors.grey,
-                      ),
-                      onPressed: () {
-                        // Add profile picture update logic here
-                      },
+                      icon: const Icon(Icons.camera_alt, color: Colors.grey),
+                      onPressed: () {},
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Name Input
               TextField(
+                controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Name',
-                  hintText: 'enter your name',
+                  hintText: 'Enter your name',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -97,8 +167,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Email Input
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: 'abc@gmail.com',
@@ -106,14 +176,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
+                readOnly: true,
               ),
               const SizedBox(height: 16),
 
-              // Phone Number Input
               TextField(
+                controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
-                  hintText: 'enter your phone number',
+                  hintText: 'Enter your phone number',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -121,7 +192,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Date of Birth Input with Date Picker
               TextField(
                 controller: _dobController,
                 decoration: InputDecoration(
@@ -144,13 +214,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Country/Region Input
               TextField(
+                controller: _countryController,
                 decoration: InputDecoration(
                   labelText: 'Country/Region',
                   hintText: 'India',
                   suffixIcon: Image.asset(
-                    'assets/image/flag.png', // Add your flag image asset here
+                    'assets/image/flag.png',
                     width: 20,
                   ),
                   border: OutlineInputBorder(
@@ -160,17 +230,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 30),
 
-              // Save Changes Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const DashboardScreen()),
-                    );
-                  },
+                  onPressed: _saveChanges,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: const Color(0xFF6F35A5),

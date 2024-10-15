@@ -1,11 +1,39 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:financial_vista/AddExpenseScreen.dart';
-import 'package:financial_vista/budget_screen.dart';
-import 'package:financial_vista/dashboard.dart';
-import 'package:financial_vista/more_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class TransactionScreen extends StatelessWidget {
+class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
+
+  @override
+  _TransactionScreenState createState() => _TransactionScreenState();
+}
+
+class _TransactionScreenState extends State<TransactionScreen> {
+  String? uId; // To store the logged-in user's u_id
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  // Load the user ID from SharedPreferences
+  Future<void> _loadUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      uId = prefs.getString('u_id');
+    });
+
+    // Debug log to check if uId is loaded correctly
+    if (uId != null) {
+      print('User ID loaded from SharedPreferences: $uId');
+    } else {
+      print('User ID is null. Please check if it is being set correctly.');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,108 +41,78 @@ class TransactionScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(''),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.black54),
-            onPressed: () {
-              // Filter action
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with dropdown and see all button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  DropdownButton<String>(
-                    value: 'This Month',
-                    icon:
-                        const Icon(Icons.arrow_drop_down, color: Colors.black),
-                    items: <String>['This Month', 'Last Month', 'This Year']
-                        .map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child:
-                            Text(value, style: const TextStyle(fontSize: 16)),
-                      );
-                    }).toList(),
-                    onChanged: (_) {},
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple[100],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                    ),
-                    onPressed: () {
-                      // See All action
-                    },
-                    child: const Text('See All',
-                        style: TextStyle(color: Colors.purple)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Today's Transaction Section
-              const Text(
-                'Today Transaction',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const TransactionTile(
-                category: 'Food',
-                description: 'Take coffee',
-                amount: '-₹50',
-                color: Colors.redAccent,
-                icon: Icons.fastfood,
-              ),
-              const TransactionTile(
-                category: 'Shopping',
-                description: 'Buy some grocery items',
-                amount: '-₹1000',
-                color: Colors.orangeAccent,
-                icon: Icons.shopping_bag,
-              ),
-              const TransactionTile(
-                category: 'Gift',
-                description: 'Buy gifts for my friends',
-                amount: '-₹500',
-                color: Colors.greenAccent,
-                icon: Icons.card_giftcard,
-              ),
-              const SizedBox(height: 20),
-              // Yesterday Transaction Section
-              const Text(
-                'Yesterday',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              const TransactionTile(
-                category: 'Salary',
-                description: 'Get salary of this month',
-                amount: '+₹10,000',
-                color: Colors.lightBlueAccent,
-                icon: Icons.account_balance_wallet,
-              ),
-              const TransactionTile(
-                category: 'Food',
-                description: 'Buy some grocery items',
-                amount: '-₹1000',
-                color: Colors.redAccent,
-                icon: Icons.fastfood,
-              ),
-            ],
-          ),
+        title: const Text('Transactions'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
+      body: uId == null
+          ? const Center(
+              child: CircularProgressIndicator(),
+            ) // Wait for uId to load
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('transactions')
+                  .where('user_id',
+                      isEqualTo: uId) // Filter by logged-in user's u_id
+                  .orderBy('date',
+                      descending: true) // Order by date, most recent first
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError) {
+                  // Print the Firestore error for debugging
+                  print('Firestore Error: ${snapshot.error}');
+
+                  // Check if error is related to missing index
+                  if (snapshot.error
+                      .toString()
+                      .contains('FAILED_PRECONDITION')) {
+                    return const Center(
+                      child: Text(
+                        'Error: Missing Firestore index. Go to the Firebase console to create the required index.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.red),
+                      ),
+                    );
+                  }
+
+                  return const Center(
+                    child: Text('Error fetching transactions'),
+                  );
+                }
+
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Center(child: Text('No transactions found'));
+                }
+
+                // Data is available
+                List<DocumentSnapshot> transactions = snapshot.data!.docs;
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: transactions.length,
+                  itemBuilder: (context, index) {
+                    Map<String, dynamic> transactionData =
+                        transactions[index].data() as Map<String, dynamic>;
+
+                    return TransactionTile(
+                      category: transactionData['category'] ?? 'Unknown',
+                      description: transactionData['title'] ?? 'No description',
+                      amount: _formatAmount(
+                          transactionData['amount'], transactionData['type']),
+                      date: transactionData['date'].toDate(),
+                      color: _getCategoryColor(transactionData['category']),
+                      icon: _getCategoryIcon(transactionData['category']),
+                    );
+                  },
+                );
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
@@ -126,56 +124,46 @@ class TransactionScreen extends StatelessWidget {
         },
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.home_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const DashboardScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.credit_card),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const TransactionScreen()),
-                );
-              },
-            ),
-            const SizedBox(width: 40), // space for the FAB
-            IconButton(
-              icon: const Icon(Icons.wallet),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const BudgetScreen()),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_horiz),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MoreScreen()),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
     );
+  }
+
+  // Helper method to format amount based on transaction type (Income/Expense)
+  String _formatAmount(double amount, String type) {
+    return type == 'Income'
+        ? '+₹${amount.toStringAsFixed(2)}'
+        : '-₹${amount.toStringAsFixed(2)}';
+  }
+
+  // Helper method to get color based on category
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Food':
+        return Colors.redAccent;
+      case 'Shopping':
+        return Colors.orangeAccent;
+      case 'Gift':
+        return Colors.greenAccent;
+      case 'Salary':
+        return Colors.lightBlueAccent;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  // Helper method to get icon based on category
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case 'Food':
+        return Icons.fastfood;
+      case 'Shopping':
+        return Icons.shopping_bag;
+      case 'Gift':
+        return Icons.card_giftcard;
+      case 'Salary':
+        return Icons.account_balance_wallet;
+      default:
+        return Icons.category;
+    }
   }
 }
 
@@ -183,6 +171,7 @@ class TransactionTile extends StatelessWidget {
   final String category;
   final String description;
   final String amount;
+  final DateTime date;
   final Color color;
   final IconData icon;
 
@@ -190,6 +179,7 @@ class TransactionTile extends StatelessWidget {
     required this.category,
     required this.description,
     required this.amount,
+    required this.date,
     required this.color,
     required this.icon,
     super.key,
@@ -226,6 +216,9 @@ class TransactionTile extends StatelessWidget {
                       fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 5),
               Text(description, style: TextStyle(color: Colors.grey[600])),
+              const SizedBox(height: 5),
+              Text(DateFormat('MMM dd, yyyy').format(date), // Display date
+                  style: TextStyle(color: Colors.grey[500])),
             ],
           ),
           const Spacer(),

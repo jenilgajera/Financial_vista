@@ -62,7 +62,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const EmailVerificationScreen()),
+                        builder: (context) => const EmailVerificationScreen(email: '',)),
                   );
                 },
                 style: ElevatedButton.styleFrom(

@@ -1,14 +1,120 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:financial_vista/AddExpenseScreen.dart';
 import 'package:financial_vista/budget_screen.dart';
 import 'package:financial_vista/edit_profile.dart';
 import 'package:financial_vista/more_screen.dart';
 import 'package:financial_vista/notification.dart';
 import 'package:financial_vista/transaction.dart';
-import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+
+  double totalBalance = 0;
+  double totalIncome = 0;
+  double totalExpenses = 0;
+  String? uId; // User ID fetched from SharedPreferences
+  String userName = 'Loading...'; // Placeholder for username
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchFinancialData();
+    _fetchUsername();
+  }
+
+  Future<void> _fetchUsername() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    uId = prefs.getString('u_id');
+
+    if (uId != null) {
+      try {
+        // Fetch user document from the 'users' collection where u_id matches
+        var userSnapshot = await _db.collection('users').doc(uId).get();
+
+        if (userSnapshot.exists) {
+          // Retrieve and update the username
+          String fetchedName = userSnapshot.data()?['username'] ?? 'User';
+
+          setState(() {
+            userName = fetchedName; // Update the username to display
+          });
+        } else {
+          setState(() {
+            userName = 'User not found'; // Handle user not found case
+          });
+        }
+      } catch (e) {
+        print('Error fetching username: $e');
+        setState(() {
+          userName = 'Error'; // Handle errors
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchUidAndFinancialData() async {
+    // Step 1: Fetch u_id from SharedPreferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    uId = prefs.getString('u_id');
+
+    if (uId != null) {
+      // Step 2: Fetch financial data from Firestore using the fetched u_id
+      _fetchFinancialData();
+    }
+  }
+
+  Future<void> _fetchFinancialData() async {
+    // Query the transactions collection where the u_id matches
+    try {
+      var snapshot = await _db
+          .collection('transactions')
+          .where('user_id', isEqualTo: uId) // Match transactions for this user
+          .get();
+
+      double income = 0;
+      double expenses = 0;
+
+      // Step 3: Iterate through the transactions and sum income and expenses
+      for (var doc in snapshot.docs) {
+        var transactionData = doc.data();
+
+        // Check what data is retrieved
+        print('Transaction Data: $transactionData');
+
+        double amount = transactionData['amount'] ?? 0;
+
+        // Ensure the 'type' is correctly retrieved, and guard against unexpected values
+        String type = transactionData['type']?.toLowerCase() ?? 'expense';
+
+        if (type == 'income') {
+          income += amount;
+        } else if (type == 'expense') {
+          expenses += amount;
+        } else {
+          print('Unknown transaction type: $type');
+        }
+      }
+
+      // Step 4: Update the state with fetched income and expense values
+      setState(() {
+        totalIncome = income;
+        totalExpenses = expenses;
+        totalBalance = income - expenses;
+      });
+    } catch (e) {
+      print('Error fetching financial data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +138,16 @@ class DashboardScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   'Hope all is fine',
                   style: TextStyle(color: Colors.black54, fontSize: 12),
                 ),
                 Text(
-                  'Krupansu Sorathiya',
-                  style: TextStyle(
+                  userName, // Display the fetched username here
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -108,31 +214,31 @@ class DashboardScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text(
-                      '₹7,00,000',
-                      style: TextStyle(
+                    Text(
+                      '₹$totalBalance',
+                      style: const TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Expenses Section
                         Row(
                           children: [
-                            Icon(Icons.arrow_downward, color: Colors.red),
-                            SizedBox(width: 5),
+                            const Icon(Icons.arrow_downward, color: Colors.red),
+                            const SizedBox(width: 5),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Expenses',
+                                const Text('Expenses',
                                     style: TextStyle(color: Colors.white)),
                                 Text(
-                                  '\$1,190,000',
-                                  style: TextStyle(
+                                  '₹$totalExpenses',
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -145,16 +251,16 @@ class DashboardScreen extends StatelessWidget {
                         // Income Section
                         Row(
                           children: [
-                            Icon(Icons.arrow_upward, color: Colors.green),
-                            SizedBox(width: 5),
+                            const Icon(Icons.arrow_upward, color: Colors.green),
+                            const SizedBox(width: 5),
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('Income',
+                                const Text('Income',
                                     style: TextStyle(color: Colors.white)),
                                 Text(
-                                  '\$3,900,000',
-                                  style: TextStyle(
+                                  '₹$totalIncome',
+                                  style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -182,20 +288,20 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'Net Worth',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
-                      '-25000',
-                      style: TextStyle(
+                      '₹$totalBalance',
+                      style: const TextStyle(
                         fontSize: 18,
                         color: Colors.white,
                       ),
@@ -211,7 +317,7 @@ class DashboardScreen extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                height: 290, // Set a fixed height for the chart
+                height: 290,
                 padding:
                     const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
                 child: BarChart(
@@ -306,6 +412,12 @@ class DashboardScreen extends StatelessWidget {
                       leftTitles: const AxisTitles(
                         sideTitles: SideTitles(showTitles: false),
                       ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
                   ),
                 ),
@@ -316,7 +428,6 @@ class DashboardScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.purple,
-        foregroundColor: Colors.white, // Set the icon color to white
         onPressed: () {
           Navigator.push(
             context,
@@ -325,7 +436,6 @@ class DashboardScreen extends StatelessWidget {
         },
         child: const Icon(Icons.add),
       ),
-
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
@@ -339,7 +449,9 @@ class DashboardScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const DashboardScreen()),
+                      builder: (context) => const DashboardScreen(
+                           
+                          )),
                 );
               },
             ),
