@@ -8,6 +8,9 @@ import 'package:financial_vista/dashboard.dart';
 import 'package:financial_vista/transaction.dart';
 import 'package:financial_vista/budget_screen.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
 
@@ -42,7 +45,7 @@ class MoreScreen extends StatelessWidget {
             icon: Icons.feedback,
             text: 'Feedback',
             onTap: () {
-              _closeSnackBar(context); // Close SnackBar if open
+              _closeSnackBar(context);
               _showFeedbackSnackBar(context);
             },
           ),
@@ -109,7 +112,8 @@ class MoreScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const DashboardScreen(),),
+                    builder: (context) => const DashboardScreen(),
+                  ),
                 );
               },
             ),
@@ -149,7 +153,7 @@ class MoreScreen extends StatelessWidget {
 
   // Function to show SnackBar for feedback
   void _showFeedbackSnackBar(BuildContext context) {
-    int rating = 0; // Variable to track the user's rating
+    int rating = 0;
     final TextEditingController feedbackController = TextEditingController();
 
     final snackBar = SnackBar(
@@ -217,19 +221,36 @@ class MoreScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple, // Background color
+                    backgroundColor: Colors.purple,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () {
-                    // Close the SnackBar
+                  onPressed: () async {
                     _closeSnackBar(context);
-                    // Logic to submit the feedback and rating
-                    String feedback = feedbackController.text;
-                    print("User's Rating: $rating");
-                    print("User's Feedback: $feedback");
-                    // TODO: Send the rating and feedback to your backend or display confirmation
+
+                    // Fetch user ID from SharedPreferences
+                    SharedPreferences prefs =
+                        await SharedPreferences.getInstance();
+                    String? userId = prefs.getString('u_id');
+
+                    // Check if userId exists and feedback isn't empty
+                    if (userId != null && feedbackController.text.isNotEmpty) {
+                      // Submit the feedback and rating
+                      await FirebaseFirestore.instance
+                          .collection('rating')
+                          .add({
+                        'user_id': userId,
+                        'rating': rating,
+                        'feedback': feedbackController.text,
+                        'timestamp': FieldValue.serverTimestamp(),
+                      });
+
+                      print("User's Rating: $rating");
+                      print("User's Feedback: ${feedbackController.text}");
+                    } else {
+                      print("User ID or feedback is missing");
+                    }
                   },
                   child: const Text(
                     'Submit',

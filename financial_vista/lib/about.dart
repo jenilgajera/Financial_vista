@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -19,51 +20,75 @@ class AboutPage extends StatelessWidget {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 20),
-              Image.asset(
-                'assets/image/potly.png', // Replace with your image asset path
-                height: 120,
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                "FINANCIAL VISTA",
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+      body: FutureBuilder<DocumentSnapshot>(
+        future: FirebaseFirestore.instance
+            .collection('about')
+            .doc('appDetails')
+            .get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return const Center(child: Text('Error loading data'));
+          } else if (!snapshot.hasData || !snapshot.data!.exists) {
+            return const Center(child: Text('No data found'));
+          } else {
+            var data = snapshot.data!.data() as Map<String, dynamic>;
+
+            return SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    Image.asset(
+                      'assets/image/potly.png', // Replace with your image asset path
+                      height: 120,
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      data['app_name'] ?? 'FINANCIAL VISTA',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      data['description'] ?? 'No description available',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildKeyFeatures(data['key_features']),
+                    const SizedBox(height: 20),
+                    _buildDevelopmentTeam(data['development_team']),
+                    const SizedBox(height: 20),
+                    _buildContactSupport(
+                        data['contact_email'], data['support_message']),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "MADE IN INDIA 🇮🇳",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 10),
-              const Text(
-                "Expense Manager is your go-to app for tracking your daily expenses, budgeting your finances, and gaining insights into your spending habits.",
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 20),
-              _buildKeyFeatures(),
-              const SizedBox(height: 20),
-              _buildDevelopmentTeam(),
-              const SizedBox(height: 20),
-              _buildContactSupport(),
-              const SizedBox(height: 20),
-              const Text(
-                "MADE IN INDIA 🇮🇳",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+        },
       ),
       backgroundColor: Colors.white,
     );
   }
 
-  Widget _buildKeyFeatures() {
+  Widget _buildKeyFeatures(List<dynamic>? features) {
+    if (features == null || features.isEmpty) {
+      return const Text('No key features available');
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -78,10 +103,7 @@ class AboutPage extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          _buildFeatureItem("Track Expense"),
-          _buildFeatureItem("Budget Planning"),
-          _buildFeatureItem("Reports & Analytics"),
-          _buildFeatureItem("Secure & Private"),
+          ...features.map((feature) => _buildFeatureItem(feature)).toList(),
         ],
       ),
     );
@@ -97,7 +119,11 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildDevelopmentTeam() {
+  Widget _buildDevelopmentTeam(List<dynamic>? team) {
+    if (team == null || team.isEmpty) {
+      return const Text('No development team information available');
+    }
+
     return Column(
       children: [
         const Text(
@@ -105,9 +131,10 @@ class AboutPage extends StatelessWidget {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
-        _buildTeamMember("Lead Development", "abc", "rku.ac.in"),
-        const SizedBox(height: 10),
-        _buildTeamMember("Database designer", "abc", "rku.ac.in"),
+        ...team
+            .map((member) => _buildTeamMember(
+                member['role'], member['name'], member['email']))
+            .toList(),
       ],
     );
   }
@@ -133,23 +160,23 @@ class AboutPage extends StatelessWidget {
     );
   }
 
-  Widget _buildContactSupport() {
-    return const Column(
+  Widget _buildContactSupport(String? email, String? message) {
+    return Column(
       children: [
-        Text(
+        const Text(
           "Contact & Support",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Text(
-          "Email: support@expmanger.com",
-          style: TextStyle(fontSize: 16),
+          email ?? 'No contact email available',
+          style: const TextStyle(fontSize: 16),
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         Text(
-          "We value your feedback! Rate us on the App Store or Google Play to help us improve.",
+          message ?? 'No support message available',
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16),
+          style: const TextStyle(fontSize: 16),
         ),
       ],
     );

@@ -48,14 +48,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     try {
-      // Here you would send the OTP to the user's email
-      // You can integrate with a third-party service to send OTP
+      // This is where you'd send the OTP to the user's email
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Verification OTP sent to your email!')),
       );
 
-      // For demonstration, we'll simulate getting a verification ID
-      _verificationId = "123456"; // This should be the OTP sent to the user
+      // Simulate getting a verification ID (actual implementation will depend on OTP provider)
+      _verificationId = "123456"; // Replace this with actual OTP logic
 
       setState(() {
         isLoading = false;
@@ -76,7 +75,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     });
 
     if (_otpController.text.trim() == _verificationId) {
-      // OTP is verified
+      // OTP verified successfully
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -118,17 +117,17 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const SizedBox(height: 40),
+            const SizedBox(height: 50),
             const Text(
-              'Enter the OTP',
+              'Verify Your Email',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Text(
-              "We've sent a verification OTP to ${widget.email}.",
-              style: const TextStyle(color: Colors.black54, fontSize: 16),
+              "We've sent a verification OTP to ${widget.email}. Please enter the OTP below.",
+              style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
             TextField(
               controller: _otpController,
               decoration: InputDecoration(
@@ -139,7 +138,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -159,7 +158,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

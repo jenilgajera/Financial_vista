@@ -1,7 +1,12 @@
-import 'package:financial_vista/dashboard.dart';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore import
+
+import 'dashboard.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -19,21 +24,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final TextEditingController _countryController = TextEditingController();
 
   String? uId;
+  File? _imageFile;
+  String? _imageUrl;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
-  }
-
-  @override
-  void dispose() {
-    _dobController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _countryController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadUserData() async {
@@ -52,6 +49,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           _phoneController.text = userData?['phone'] ?? '';
           _dobController.text = userData?['dob'] ?? '';
           _countryController.text = userData?['country'] ?? '';
+          _imageUrl = userData?['imageUrl'] ?? ''; // Load profile image
         });
       }
     }
@@ -60,36 +58,74 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Future<void> _saveChanges() async {
     if (uId != null) {
       try {
+        String? imageUrl;
+        if (_imageFile != null) {
+          imageUrl = await _uploadImageToFirebase(_imageFile!);
+          setState(() {
+            _imageUrl = imageUrl; // Update the image URL in the state
+          });
+        }
+
         await FirebaseFirestore.instance.collection('users').doc(uId).update({
           'username': _nameController.text,
           'phone': _phoneController.text,
           'dob': _dobController.text,
           'country': _countryController.text,
+          'imageUrl': imageUrl ?? _imageUrl, // Save new image URL if available
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
+              content: Text('Profile updated successfully!'),
+              backgroundColor: Colors.green),
         );
 
         Future.delayed(const Duration(seconds: 2), () {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => const DashboardScreen(),
-            ),
+            MaterialPageRoute(builder: (context) => const DashboardScreen()),
           );
         });
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error updating profile: $e'),
-            backgroundColor: Colors.red,
-          ),
+              content: Text('Error updating profile: $e'),
+              backgroundColor: Colors.red),
         );
       }
+    }
+  }
+
+  Future<String> _uploadImageToFirebase(File imageFile) async {
+    try {
+      String fileName = path.basename(imageFile.path);
+      Reference storageRef =
+          FirebaseStorage.instance.ref().child('profile_images/$fileName');
+      UploadTask uploadTask = storageRef.putFile(imageFile);
+
+      TaskSnapshot taskSnapshot = await uploadTask;
+      return await taskSnapshot.ref.getDownloadURL();
+    } catch (e) {
+      throw Exception("Error uploading image: $e");
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Error picking image: $e'),
+            backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -122,10 +158,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
         title: const Text(
           'Edit Profile',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -138,60 +171,64 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Profile Image
               Stack(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 60,
-                    backgroundImage:
-                        AssetImage('assets/image/profileimage.png'),
+                    backgroundImage: _imageFile != null
+                        ? FileImage(_imageFile!)
+                        : (_imageUrl != null && _imageUrl!.isNotEmpty)
+                            ? NetworkImage(_imageUrl!) as ImageProvider
+                            : const AssetImage('assets/image/profileimage.png'),
                   ),
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: IconButton(
                       icon: const Icon(Icons.camera_alt, color: Colors.grey),
-                      onPressed: () {},
+                      onPressed: _pickImage,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
+              // Name field
               TextField(
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Name',
                   hintText: 'Enter your name',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 16),
 
+              // Email field
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
                   hintText: 'abc@gmail.com',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 readOnly: true,
               ),
               const SizedBox(height: 16),
 
+              // Phone number field
               TextField(
                 controller: _phoneController,
                 decoration: InputDecoration(
                   labelText: 'Phone Number',
                   hintText: 'Enter your phone number',
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 16),
 
+              // Date of Birth field
               TextField(
                 controller: _dobController,
                 decoration: InputDecoration(
@@ -204,8 +241,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     },
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
                 readOnly: true,
                 onTap: () {
@@ -214,22 +250,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Country field
               TextField(
                 controller: _countryController,
                 decoration: InputDecoration(
                   labelText: 'Country/Region',
                   hintText: 'India',
-                  suffixIcon: Image.asset(
-                    'assets/image/flag.png',
-                    width: 20,
-                  ),
+                  suffixIcon: const Icon(Icons.flag),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               const SizedBox(height: 30),
 
+              // Save Changes button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -238,14 +272,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     backgroundColor: const Color(0xFF6F35A5),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                        borderRadius: BorderRadius.circular(10)),
                   ),
                   child: const Text(
                     'Save changes',
-                    style: TextStyle(
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),

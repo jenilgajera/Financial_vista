@@ -21,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   double totalBalance = 0;
   double totalIncome = 0;
+  
   double totalExpenses = 0;
   String? uId; // User ID fetched from SharedPreferences
   String userName = 'Loading...'; // Placeholder for username
@@ -28,8 +29,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+    _resetDashboardState();
     _fetchFinancialData();
+    _fetchUidAndFinancialData();
     _fetchUsername();
+  }
+
+  Future<void> _resetDashboardState() async {
+    // Reset all variables to their default values
+    setState(() {
+      totalBalance = 0;
+      totalIncome = 0;
+      totalExpenses = 0;
+      userName = 'Loading...'; // Reset the username
+      uId = null; // Clear the stored u_id
+    });
   }
 
   Future<void> _fetchUsername() async {
@@ -65,20 +79,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> _fetchUidAndFinancialData() async {
     // Step 1: Fetch u_id from SharedPreferences
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    uId = prefs.getString('u_id');
+    String? newUId = prefs.getString('u_id');
+
+    // Step 2: Check if the uId has changed (new user login)
+    if (newUId != uId) {
+      // Reset financial data if a new user has logged in
+      await _resetDashboardState(); // Await the reset to complete before fetching new data
+    }
+
+    // Step 3: Update the uId to the new value and fetch the financial data
+    uId = newUId;
 
     if (uId != null) {
-      // Step 2: Fetch financial data from Firestore using the fetched u_id
-      _fetchFinancialData();
+      // Step 4: Fetch financial data from Firestore using the fetched u_id
+      await _fetchFinancialData(); // Await financial data fetch
     }
   }
 
   Future<void> _fetchFinancialData() async {
-    // Query the transactions collection where the u_id matches
+    if (uId == null) return; // Ensure that uId is set before querying
     try {
       var snapshot = await _db
           .collection('transactions')
-          .where('user_id', isEqualTo: uId) // Match transactions for this user
+          .where('user_id',
+              isEqualTo: uId) // Filter by the logged-in user's u_id
           .get();
 
       double income = 0;
@@ -87,21 +111,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Step 3: Iterate through the transactions and sum income and expenses
       for (var doc in snapshot.docs) {
         var transactionData = doc.data();
-
-        // Check what data is retrieved
-        print('Transaction Data: $transactionData');
-
         double amount = transactionData['amount'] ?? 0;
-
-        // Ensure the 'type' is correctly retrieved, and guard against unexpected values
         String type = transactionData['type']?.toLowerCase() ?? 'expense';
 
         if (type == 'income') {
           income += amount;
         } else if (type == 'expense') {
           expenses += amount;
-        } else {
-          print('Unknown transaction type: $type');
         }
       }
 
@@ -449,9 +465,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const DashboardScreen(
-                           
-                          )),
+                      builder: (context) => const DashboardScreen()),
                 );
               },
             ),

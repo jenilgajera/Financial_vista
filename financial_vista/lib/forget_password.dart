@@ -1,10 +1,10 @@
-import 'package:financial_vista/emailverification.dart';
-import 'package:financial_vista/sign_create.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:financial_vista/email_verification_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:email_auth/email_auth.dart';
+import 'signing.dart'; // Adjust the import according to your project structure
 
 class ForgotPasswordScreen extends StatefulWidget {
-  const ForgotPasswordScreen({super.key});
+  const ForgotPasswordScreen({Key? key}) : super(key: key);
 
   @override
   _ForgotPasswordScreenState createState() => _ForgotPasswordScreenState();
@@ -12,39 +12,44 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
   bool isLoading = false;
 
-  Future<void> _sendPasswordResetEmail() async {
+  void sendOtp() async {
+    if (_emailController.text.isEmpty || !_emailController.text.contains('@')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email.')),
+      );
+      return;
+    }
+
     setState(() {
-      isLoading = true;
+      isLoading = true; // Start loading
     });
 
-    try {
-      String email = _emailController.text.trim();
+    // Initialize EmailAuth and set the session name
+    EmailAuth emailAuth = EmailAuth(sessionName: "Password Reset Session");
 
-      // Send password reset email
-      await _auth.sendPasswordResetEmail(email: email);
+    // Send OTP to the entered email
+    bool res =
+        await emailAuth.sendOtp(recipientMail: _emailController.text.trim());
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password reset email sent!')),
-      );
-
-      // Navigate to the EmailVerificationScreen
+    if (res) {
+      // Navigate to the OTP verification screen and pass the email
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => EmailVerificationScreen(email: email),
+          builder: (context) =>
+              EmailVerificationScreen(email: _emailController.text.trim()),
         ),
       );
-    } on FirebaseAuthException catch (e) {
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.message ?? 'Error sending reset email')),
+        const SnackBar(content: Text('Failed to send OTP. Please try again.')),
       );
     }
 
     setState(() {
-      isLoading = false;
+      isLoading = false; // Stop loading
     });
   }
 
@@ -85,23 +90,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
+              keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: isLoading ? null : _sendPasswordResetEmail,
+                onPressed: sendOtp, // Send OTP on button press
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: const Color(0xff77f50cc),
+                  backgroundColor: const Color(0xfff50cc),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
                 child: isLoading
-                    ? const CircularProgressIndicator()
+                    ? const CircularProgressIndicator(color: Colors.white)
                     : const Text(
-                        'Send Password Reset Email',
+                        'Send OTP',
                         style: TextStyle(fontSize: 16, color: Colors.white),
                       ),
               ),
@@ -113,19 +119,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const SignInScreen()),
+                        builder: (context) => const LoginScreen()),
                   );
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Remember password?',
                       style: TextStyle(
                         color: Colors.black54,
                       ),
                     ),
-                    const Text(
+                    Text(
                       ' Log in',
                       style: TextStyle(
                         color: Colors.black,
@@ -142,4 +148,3 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 }
-  

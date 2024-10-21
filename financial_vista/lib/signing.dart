@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => DashboardScreen(),
+              builder: (context) => const DashboardScreen(),
             ),
           );
         } else {
