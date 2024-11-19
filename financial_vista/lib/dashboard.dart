@@ -7,6 +7,7 @@ import 'package:financial_vista/edit_profile.dart';
 import 'package:financial_vista/more_screen.dart';
 import 'package:financial_vista/notification.dart';
 import 'package:financial_vista/transaction.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -18,13 +19,15 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
-
+  List<BarChartGroupData> barGroups = [];
   double totalBalance = 0;
   double totalIncome = 0;
-  
+
   double totalExpenses = 0;
   String? uId; // User ID fetched from SharedPreferences
   String userName = 'Loading...'; // Placeholder for username
+  int currentStartDay = 1; // Track the starting day of the range to show
+  int daysToShow = 5; // Number of days to show at once (5 days)
 
   @override
   void initState() {
@@ -97,39 +100,90 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _fetchFinancialData() async {
-    if (uId == null) return; // Ensure that uId is set before querying
+    if (uId == null) return;
+
     try {
       var snapshot = await _db
           .collection('transactions')
-          .where('user_id',
-              isEqualTo: uId) // Filter by the logged-in user's u_id
+          .where('user_id', isEqualTo: uId)
           .get();
 
-      double income = 0;
-      double expenses = 0;
+      Map<String, double> dailyIncome = {};
+      Map<String, double> dailyExpenses = {};
 
-      // Step 3: Iterate through the transactions and sum income and expenses
       for (var doc in snapshot.docs) {
         var transactionData = doc.data();
         double amount = transactionData['amount'] ?? 0;
         String type = transactionData['type']?.toLowerCase() ?? 'expense';
+        Timestamp timestamp = transactionData['date'];
+        DateTime date = timestamp.toDate();
+
+        // Use a formatted date string as the key (e.g., "16-Nov")
+        String dayKey = "${date.day}-${DateFormat('MMM').format(date)}";
 
         if (type == 'income') {
-          income += amount;
+          dailyIncome[dayKey] = (dailyIncome[dayKey] ?? 0) + amount;
         } else if (type == 'expense') {
-          expenses += amount;
+          dailyExpenses[dayKey] = (dailyExpenses[dayKey] ?? 0) + amount;
         }
       }
 
-      // Step 4: Update the state with fetched income and expense values
+      // Update the state to create the bar chart data
       setState(() {
-        totalIncome = income;
-        totalExpenses = expenses;
-        totalBalance = income - expenses;
+        barGroups = [];
+        for (int i = currentStartDay;
+            i < currentStartDay + daysToShow && i <= 31;
+            i++) {
+          // Generate key using i (day number)
+          String dayKey = "$i-${DateFormat('MMM').format(DateTime.now())}";
+
+          double income = dailyIncome[dayKey] ?? 0;
+          double expenses = dailyExpenses[dayKey] ?? 0;
+
+          barGroups.add(BarChartGroupData(
+            x: i - 1, // Ensure it aligns correctly on x-axis
+            barRods: [
+              BarChartRodData(
+                toY: income,
+                color: Colors.green,
+                width: 16,
+              ),
+              BarChartRodData(
+                toY: expenses,
+                color: Colors.red,
+                width: 16,
+              ),
+            ],
+          ));
+        }
+
+        totalIncome = dailyIncome.values.fold(0, (sum, item) => sum + item);
+        totalExpenses = dailyExpenses.values.fold(0, (sum, item) => sum + item);
+        totalBalance = totalIncome - totalExpenses;
       });
     } catch (e) {
       print('Error fetching financial data: $e');
     }
+  }
+
+  // Method to go to the next 5 days
+  void _nextPage() {
+    setState(() {
+      if (currentStartDay + daysToShow <= 31) {
+        currentStartDay += daysToShow;
+      }
+      _fetchFinancialData(); // Re-fetch the data for the new range
+    });
+  }
+
+  // Method to go to the previous 5 days
+  void _previousPage() {
+    setState(() {
+      if (currentStartDay - daysToShow >= 1) {
+        currentStartDay -= daysToShow;
+      }
+      _fetchFinancialData(); // Re-fetch the data for the new range
+    });
   }
 
   @override
@@ -329,114 +383,60 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             // Bar Chart Container
             Positioned(
-              top: 380,
+              top: 350,
               left: 0,
               right: 0,
               child: Container(
-                height: 290,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 20, horizontal: 30),
-                child: BarChart(
-                  BarChartData(
-                    barGroups: [
-                      BarChartGroupData(
-                        x: 0,
-                        barRods: [
-                          BarChartRodData(
-                            toY: 8,
-                            color: Colors.blue,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                      BarChartGroupData(
-                        x: 1,
-                        barRods: [
-                          BarChartRodData(
-                            toY: 10,
-                            color: Colors.green,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                      BarChartGroupData(
-                        x: 2,
-                        barRods: [
-                          BarChartRodData(
-                            toY: 14,
-                            color: Colors.orange,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                      BarChartGroupData(
-                        x: 3,
-                        barRods: [
-                          BarChartRodData(
-                            toY: 7,
-                            color: Colors.purple,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                      BarChartGroupData(
-                        x: 4,
-                        barRods: [
-                          BarChartRodData(
-                            toY: 9,
-                            color: Colors.red,
-                            width: 16,
-                          ),
-                        ],
-                      ),
-                    ],
-                    borderData: FlBorderData(show: false),
-                    titlesData: FlTitlesData(
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          getTitlesWidget: (double value, TitleMeta meta) {
-                            const style = TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            );
-                            String text;
-                            switch (value.toInt()) {
-                              case 0:
-                                text = 'Jan';
-                                break;
-                              case 1:
-                                text = 'Feb';
-                                break;
-                              case 2:
-                                text = 'Mar';
-                                break;
-                              case 3:
-                                text = 'Apr';
-                                break;
-                              case 4:
-                                text = 'May';
-                                break;
-                              default:
-                                text = '';
-                            }
-                            return Text(text, style: style);
-                          },
-                        ),
-                      ),
-                      leftTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      topTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
-                      ),
-                      rightTitles: const AxisTitles(
-                        sideTitles: SideTitles(showTitles: false),
+                height: 330,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: BarChart(BarChartData(
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(showTitles: true),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (double value, TitleMeta meta) {
+                          int day = value.toInt() + 1;
+                          return Text(
+                            "$day", // Display the day number
+                            style: const TextStyle(
+                                color: Colors.black, fontSize: 10),
+                          );
+                        },
                       ),
                     ),
                   ),
-                ),
+                  barGroups: barGroups,
+                  gridData: FlGridData(show: true),
+                  borderData: FlBorderData(show: false),
+                )),
+              ),
+            ),
+            // Pagination Controls
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    onPressed: _previousPage,
+                  ),
+                  Text(
+                      'Days ${currentStartDay} - ${currentStartDay + daysToShow - 1}'),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward, color: Colors.black),
+                    onPressed: _nextPage,
+                  ),
+                ],
               ),
             ),
           ],

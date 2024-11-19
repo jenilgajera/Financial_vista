@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:path_provider/path_provider.dart'; // Path provider import
+import 'dart:io';
 
 class SaveBillScreen extends StatefulWidget {
   const SaveBillScreen({super.key});
@@ -9,251 +14,381 @@ class SaveBillScreen extends StatefulWidget {
 }
 
 class _SaveBillScreenState extends State<SaveBillScreen> {
+  final TextEditingController dateController = TextEditingController();
+  final TextEditingController amountController = TextEditingController();
+  final TextEditingController titleController = TextEditingController();
+  final TextEditingController notesController = TextEditingController();
+
   DateTime? selectedDate;
-  TextEditingController dateController = TextEditingController();
-  TextEditingController amountController = TextEditingController();
   String selectedCategory = 'Maintenance';
   String paidStatus = 'Paid';
+  String? uId;
 
   @override
-  void dispose() {
-    dateController.dispose();
-    amountController.dispose();
-  super.dispose();
+  void initState() {
+    super.initState();
+    _loadUserId();
+  }
+
+  Future<void> _loadUserId() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      uId = prefs.getString('u_id') ?? 'default_user_id';
+    });
+  }
+
+  Future<void> _saveBill() async {
+    if (uId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('User ID not found. Please log in.')),
+      );
+      return;
+    }
+
+    final billData = {
+      'date': dateController.text,
+      'amount': amountController.text,
+      'category': selectedCategory,
+      'status': paidStatus,
+      'title': titleController.text,
+      'notes': notesController.text,
+      'u_id': uId,
+    };
+
+    try {
+      await FirebaseFirestore.instance.collection('bills').add(billData);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bill added successfully')),
+      );
+      _clearFields();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to add bill: $e')),
+      );
+    }
+  }
+
+  void _clearFields() {
+    dateController.clear();
+    amountController.clear();
+    titleController.clear();
+    notesController.clear();
+    setState(() {
+      selectedCategory = 'Maintenance';
+      paidStatus = 'Paid';
+    });
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
+    final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != selectedDate) {
+    if (pickedDate != null) {
       setState(() {
-        selectedDate = picked;
-        dateController.text = DateFormat('MM/dd/yyyy').format(picked);
+        selectedDate = pickedDate;
+        dateController.text =
+            "${pickedDate.month}/${pickedDate.day}/${pickedDate.year}";
       });
+    }
+  }
+
+  Future<void> _generatePdf(List<Map<String, dynamic>> bills) async {
+    final pdf = pw.Document();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text('Bills Report',
+                  style: pw.TextStyle(
+                      fontSize: 24, fontWeight: pw.FontWeight.bold)),
+              pw.SizedBox(height: 16),
+              pw.Table.fromTextArray(
+                headers: ['Date', 'Title', 'Amount', 'Category', 'Status'],
+                data: bills.map((bill) {
+                  return [
+                    bill['date'],
+                    bill['title'],
+                    bill['amount'],
+                    bill['category'],
+                    bill['status']
+                  ];
+                }).toList(),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    try {
+      final output = await getTemporaryDirectory(); // Make sure this works
+      final file = File("${output.path}/bills_report.pdf");
+      await file.writeAsBytes(await pdf.save());
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('PDF saved at ${file.path}'),
+          action: SnackBarAction(
+            label: 'Open',
+            onPressed: () {
+              // Add logic to open the PDF if necessary.
+            },
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error generating PDF: $e')),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Save Your Bill'),
+        backgroundColor: Colors.purple[300],
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf),
+            onPressed: () async {
+              final bills = await _fetchBills();
+              if (bills.isNotEmpty) {
+                await _generatePdf(bills);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                      content: Text('No bills available to generate PDF.')),
+                );
+              }
+            },
+          ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Date field with container styling
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
-              ),
-              child: TextFormField(
-                controller: dateController,
-                decoration: const InputDecoration(
-                  labelText: 'Enter date',
-                  prefixIcon: Icon(Icons.calendar_today),
-                  border: InputBorder.none,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16.0),
+                decoration: BoxDecoration(
+                  color: Colors.purple[50],
+                  borderRadius: BorderRadius.circular(12.0),
                 ),
-                readOnly: true,
-                onTap: () {
-                  _selectDate(context);
-                },
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Amount field with container styling
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
-              ),
-              child: TextFormField(
-                controller: amountController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Enter Amount',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Category dropdown with container styling
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
-              ),
-              child: DropdownButtonFormField<String>(
-                value: selectedCategory,
-                items: ['Maintenance', 'Electricity', 'Rent', 'Internet']
-                    .map((category) {
-                  return DropdownMenuItem<String>(
-                    value: category,
-                    child: Text(category),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedCategory = value!;
-                  });
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Select category',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Paid status radio buttons inside container
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Paid Status', style: TextStyle(fontSize: 16)),
-                  Row(
-                    children: [
-                      Radio<String>(
-                        value: 'Paid',
-                        groupValue: paidStatus,
-                        onChanged: (value) {
-                          setState(() {
-                            paidStatus = value!;
-                          });
-                        },
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: dateController,
+                      readOnly: true,
+                      decoration: InputDecoration(
+                        labelText: 'Select date',
+                        hintText: 'mm/dd/yyyy',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today),
+                          onPressed: () => _selectDate(context),
+                        ),
                       ),
-                      const Text('Paid'),
-                      Radio<String>(
-                        value: 'Pending',
-                        groupValue: paidStatus,
-                        onChanged: (value) {
-                          setState(() {
-                            paidStatus = value!;
-                          });
-                        },
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Enter Amount',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
-                      const Text('Pending'),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Title field with container styling
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
-              ),
-              child: TextFormField(
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  prefixIcon: Icon(Icons.title),
-                  border: InputBorder.none,
+                    ),
+                    const SizedBox(height: 16.0),
+                    DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      items: ['Maintenance', 'Electricity', 'Rent', 'Internet']
+                          .map((category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedCategory = value!;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Select category',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: RadioListTile<String>(
+                            value: 'Paid',
+                            groupValue: paidStatus,
+                            title: const Text('Paid'),
+                            onChanged: (value) {
+                              setState(() {
+                                paidStatus = value!;
+                              });
+                            },
+                          ),
+                        ),
+                        Expanded(
+                          child: RadioListTile<String>(
+                            value: 'Pending',
+                            groupValue: paidStatus,
+                            title: const Text('Pending'),
+                            onChanged: (value) {
+                              setState(() {
+                                paidStatus = value!;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextField(
+                      controller: titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Title',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    TextField(
+                      controller: notesController,
+                      maxLines: 3,
+                      decoration: InputDecoration(
+                        labelText: 'Notes',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16.0),
+                    ElevatedButton(
+                      onPressed: _saveBill,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple[300],
+                        padding: const EdgeInsets.symmetric(vertical: 14.0),
+                      ),
+                      child: const Text('Add Bill'),
+                    ),
+                  ],
                 ),
               ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Notes field with container styling
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.purple.shade200),
+              const SizedBox(height: 24.0),
+              const Text(
+                'Bills',
+                style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
               ),
-              child: TextFormField(
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Notes',
-                  prefixIcon: Icon(Icons.note),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Add Bill Button
-            ElevatedButton(
-              onPressed: () {
-                // Logic to add the bill
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(double.infinity, 48),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text('Add Bill'),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Display bills
-            SizedBox(
-              height: screenWidth * 0.4, // Dynamic height based on screen width
-              child: ListView(
-                children: [
-                  _buildBillCard('Maintenance', 1000, true),
-                  _buildBillCard('Electricity', 2000, false),
-                ],
-              ),
-            ),
-          ],
+              const SizedBox(height: 16.0),
+              _buildBillsList(),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBillCard(String title, int amount, bool isPaid) {
-    return Card(
-      color: Colors.purple.shade100,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(
-          '₹$amount',
-          style: const TextStyle(fontSize: 16),
-        ),
-        trailing: Text(
-          isPaid ? 'Paid' : 'Pending',
-          style: TextStyle(
-            color: isPaid ? Colors.green : Colors.red,
-            fontWeight: FontWeight.bold,
+  Future<List<Map<String, dynamic>>> _fetchBills() async {
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('bills')
+        .where('u_id', isEqualTo: uId)
+        .get();
+
+    return querySnapshot.docs
+        .map((doc) => doc.data() as Map<String, dynamic>)
+        .toList();
+  }
+
+  Widget _buildBillsList() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchBills(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('No bills found.'));
+        }
+        final bills = snapshot.data!;
+        return Column(
+          children: bills.map((bill) {
+            return _buildBillCard(
+              bill['title'] ?? 'N/A',
+              '₹${bill['amount'] ?? '0'}',
+              bill['status'] ?? 'Pending',
+              bill['status'] == 'Paid' ? Colors.green : Colors.red,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildBillCard(
+      String title, String amount, String status, Color statusColor) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.9,
+      margin: const EdgeInsets.only(bottom: 8.0),
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: Colors.purple[50],
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
           ),
-        ),
+          const SizedBox(height: 8.0),
+          Text(
+            amount,
+            style: const TextStyle(fontSize: 16.0),
+          ),
+          const SizedBox(height: 8.0),
+          Row(
+            children: [
+              Icon(
+                status == 'Paid' ? Icons.check_circle : Icons.cancel,
+                color: statusColor,
+              ),
+              const SizedBox(width: 4.0),
+              Text(
+                status,
+                style: TextStyle(color: statusColor),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

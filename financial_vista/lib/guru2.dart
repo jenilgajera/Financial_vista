@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Guru2 extends StatelessWidget {
   const Guru2({super.key});
@@ -19,16 +21,13 @@ class Guru2 extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-
-              // First Guru Container
+              // Guru Container
               buildGuruContainer(
-                context: context,
-                imageUrl: 'assets/image/krupansu.png', // Local image
-                name: 'Krupansu sorathiya',
-                title: 'Tax and Debt management consultant',
+                imageUrl: 'assets/image/nenis.png',
+                name: 'Nenis Rudani',
+                title: 'Personal Finance & Investment Advisor',
               ),
               const SizedBox(height: 16),
-
               // Form UI
               buildFormContainer(context),
             ],
@@ -38,9 +37,8 @@ class Guru2 extends StatelessWidget {
     );
   }
 
-  // Method to build each Guru Container
+  // Guru Container Widget
   Widget buildGuruContainer({
-    required BuildContext context,
     required String imageUrl,
     required String name,
     required String title,
@@ -61,7 +59,6 @@ class Guru2 extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Full Width Image at the Top
           ClipRRect(
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16.0),
@@ -69,17 +66,15 @@ class Guru2 extends StatelessWidget {
             ),
             child: Image.asset(
               imageUrl,
-              width: double.infinity, // Full width image
-              height: 400, // Fixed height for the image
-              fit: BoxFit.cover, // Make sure the image covers the entire area
+              width: double.infinity,
+              height: 400,
+              fit: BoxFit.cover,
             ),
           ),
-
-          // Text area with background color or gradient
           Container(
             padding: const EdgeInsets.all(16),
             decoration: const BoxDecoration(
-              color: Color(0xFFF6EEFF), // Light purple background
+              color: Color(0xFFF6EEFF),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(16.0),
                 bottomRight: Radius.circular(16.0),
@@ -88,7 +83,6 @@ class Guru2 extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Guru Name
                 Text(
                   name,
                   style: const TextStyle(
@@ -98,8 +92,6 @@ class Guru2 extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-
-                // Guru Title
                 Text(
                   title,
                   style: const TextStyle(
@@ -117,8 +109,12 @@ class Guru2 extends StatelessWidget {
     );
   }
 
-  // Form UI
+  // Form Container Widget
   Widget buildFormContainer(BuildContext context) {
+    final emailController = TextEditingController();
+    final phoneController = TextEditingController();
+    final notesController = TextEditingController();
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -140,46 +136,45 @@ class Guru2 extends StatelessWidget {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
-
-          // Notes TextField
-          const TextField(
+          TextField(
+            controller: notesController,
             maxLines: 3,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Notes',
               border: OutlineInputBorder(),
               suffixIcon: Icon(Icons.copy),
             ),
           ),
           const SizedBox(height: 20),
-
-          // Email Input
-          const TextField(
-            decoration: InputDecoration(
+          TextField(
+            controller: emailController,
+            decoration: const InputDecoration(
               labelText: 'Email address',
               border: OutlineInputBorder(),
               suffixIcon: Icon(Icons.check_circle, color: Colors.black),
             ),
           ),
           const SizedBox(height: 20),
-
-          // Phone Input
-          const TextField(
+          TextField(
+            controller: phoneController,
             keyboardType: TextInputType.phone,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Phone number',
               border: OutlineInputBorder(),
               suffixIcon: Icon(Icons.check_circle, color: Colors.black),
             ),
           ),
           const SizedBox(height: 30),
-
-          // Submit Button
           ElevatedButton(
             onPressed: () {
-              // Handle form submission logic
+              sendEmail(
+                emailController.text,
+                phoneController.text,
+                notesController.text,
+              );
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.purple, // Button background color
+              backgroundColor: Colors.purple,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -193,5 +188,37 @@ class Guru2 extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  // Function to send an email using EmailJS
+  void sendEmail(String email, String phone, String notes) async {
+    const serviceId = 'service_xkzcies';
+    const templateId = 'template_a3cflwm';
+    const publicKey = 'qbLdTomr9yg4DSLli'; // Your Public Key here
+
+    final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: json.encode({
+        'service_id': serviceId,
+        'template_id': templateId,
+        'user_id': publicKey,
+        'template_params': {
+          'admin_email': 'ksorathiya284@rku.ac.in',
+          'user_email': email,
+          'user_phone': phone,
+          'user_notes': notes,
+        },
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print('Email sent successfully!');
+    } else {
+      print('Failed to send email: ${response.body}');
+    }
   }
 }

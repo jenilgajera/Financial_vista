@@ -37,7 +37,7 @@ class FinancialGuruScreen extends StatelessWidget {
                 onButtonPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const Guru1()),
+                    MaterialPageRoute(builder: (context) =>  Guru1()),
                   );
                 },
               ),
